@@ -1,0 +1,14 @@
+# Poetry
+
+--start
+poetry init  <set pyproject.toml>
+poetry shell <run PS as admin from in the folder>
+poetry lock
+poetry update
+а чё так сложно????
+
+--add
+poetry add *
+
+# Overall
+poetry shell -> "flask --app..."/"python..." run from dir (cd $PSScriptRoot) as admin (shortcut)
