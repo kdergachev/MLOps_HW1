@@ -3,6 +3,8 @@ import statsmodels.api as sma
 import statsmodels as sm
 import pandas as pd
 import numpy as np
+import json
+from trainable_models import *
 
 
 MODELDIR = './models'
@@ -16,7 +18,15 @@ def list_model_classes():
     return jsonify({'available models': MODLIST})
 
 
-@app.get("/models")
-def get_models():
-    return "<p>Hello, World!</p>"
-    
+@app.post("/models")
+def add_model():
+    data = json.loads(request.data)
+    model = data['model']
+    model = for_train[model]
+    model(data['Y'], data['X'], data['hyperparams'])
+    return 'OK', 201
+
+
+@app.post("/models")
+def add_model():
+    data = json.loads(request.data)
