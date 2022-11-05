@@ -13,21 +13,34 @@ MODLIST = [{'lib': 'sklearn', 'model': 'LinearRegression', 'name':'linreg'},
 
 app = Flask(__name__)
 
+
 @app.get("/listmod")
 def list_model_classes():
+    """
+    Lists model classes that can be trained
+    If a new model class is programmed to be trained add it to MODLIST variable
+    """
+    
+    # read a JSON file with the same contents to not use "global"???
     global MODLIST
     return jsonify({'available models': MODLIST})
 
 
 @app.post("/models")
 def add_model():
-    
+    """
+    Train a model using JSON data POSTed
+    """
     id = None
     data = json.loads(request.data)
     model = data['model']
-    #model = for_train[model]
+    
+    # if model here is str then it is model specification
     if isinstance(model, str):
         model = for_train[model]
+    # else it should be id to retrain the model, hyperparams and model class 
+    # from JSON are overwritten if present (no need in allowing change of
+    # hyperparameters as it will be the same as fitting a new model)
     else:
         try:
             id = model['id']
@@ -43,7 +56,9 @@ def add_model():
 
 @app.post("/models/<model_id>")
 def predict_delete(model_id):
-    
+    """
+    POST with model deletion or getting model predict
+    """
     id = int(model_id)
     print(request.data)
     data = json.loads(request.data)
@@ -59,5 +74,4 @@ def predict_delete(model_id):
         print(list(model.predict(data['X'])))
         return jsonify({"prediction": list(model.predict(data['X']))}), 201
     else:
-        return 'no/wrong action parameter', 500
-        
+        return 'no/wrong action parameter', 500 
