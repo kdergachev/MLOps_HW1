@@ -67,7 +67,7 @@ def predict_delete(model_id):
         return 'Done', 201
     elif data['action'] == 'predict':
         models = os.listdir(MODELDIR)
-        modfile = filter(lambda x: int(re.search('_(\d*).pkl$', x)[1]) == int(id), models)
+        modfile = filter(lambda x: int(re.search('_(-?\d*).pkl$', x)[1]) == int(id), models)
         modfile = list(modfile)[0]
         with open(f'./models/{modfile}', 'rb') as handle:
             model = pickle.load(handle)

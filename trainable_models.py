@@ -33,7 +33,7 @@ def name_to_save(model, idx):
     
     # get id if not supplied with one
     if idx is None:
-        idx = [int(re.search('_(\d*).pkl$', i)[1]) for i in os.listdir(MODELDIR)]
+        idx = [int(re.search('_(-?\d*).pkl$', i)[1]) for i in os.listdir(MODELDIR)]
         if not idx:
             idx = 0
         else:
@@ -128,7 +128,7 @@ def get_params_from_id(id):
     model_hyperparameters: dict, model_name: str
     """
     models = os.listdir(MODELDIR)
-    modfile = filter(lambda x: int(re.search('_(\d*).pkl$', x)[1]) == int(id), models)
+    modfile = filter(lambda x: int(re.search('_(-?\d*).pkl$', x)[1]) == int(id), models)
     modfile = list(modfile)[0] # to remove the first (hopefully the only) match
     with open(f'./models/{modfile}', 'rb') as handle:
         model = pickle.load(handle)
@@ -149,6 +149,6 @@ def clear_ids(id):
     """
     
     models = os.listdir(MODELDIR)
-    modfiles = filter(lambda x: int(re.search('_(\d*).pkl$', x)[1]) == int(id), models)
+    modfiles = filter(lambda x: int(re.search('_(-?\d+).pkl$', x)[1]) == int(id), models)
     [os.remove(f'{MODELDIR}/{i}') for i in modfiles]
     return 0

@@ -18,3 +18,5 @@ poetry shell -> "flask --app..."/"python..." run from dir (cd $PSScriptRoot) as 
 # Docker
 docker build -t hw1_dockered .
 docker run -p 5000:5000 hw1_dockered (call localhost:5000 works)
+
+/tests/ - системное тестирование на минималках
