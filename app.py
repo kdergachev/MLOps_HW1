@@ -1,10 +1,7 @@
 from flask import Flask, request, jsonify
-import statsmodels.api as sma
-import statsmodels as sm
-import pandas as pd
-import numpy as np
 import json
 from trainable_models import *
+from database_utils import *
 
 
 MODELDIR = './models'
@@ -31,7 +28,7 @@ def add_model():
     """
     Train a model using JSON data POSTed
     """
-    id = None
+    idx = None
     data = json.loads(request.data)
     model = data['model']
     
@@ -43,14 +40,17 @@ def add_model():
     # hyperparameters as it will be the same as fitting a new model)
     else:
         try:
-            id = model['id']
+            idx = model['id']
+            print(idx)
             data['hyperparams'], data['model'] = get_params_from_id(model['id'])
+            print(data['hyperparams'], data['model'])
             model = data['model']
+            print('fffff')
             model = for_train[model]
         except:
             return 'err 1', 500
     
-    model(data['Y'], data['X'], data.get('hyperparams', None), id)
+    model(data['Y'], data['X'], data.get('hyperparams', None), idx)
     return 'OK', 201
 
 
@@ -59,18 +59,14 @@ def predict_delete(model_id):
     """
     POST with model deletion or getting model predict
     """
-    id = int(model_id)
+    idx = int(model_id)
     print(request.data)
     data = json.loads(request.data)
     if data['action'] == 'delete':
-        clear_ids(id)
+        clear_ids(idx)
         return 'Done', 201
     elif data['action'] == 'predict':
-        models = os.listdir(MODELDIR)
-        modfile = filter(lambda x: int(re.search('_(-?\d*).pkl$', x)[1]) == int(id), models)
-        modfile = list(modfile)[0]
-        with open(f'./models/{modfile}', 'rb') as handle:
-            model = pickle.load(handle)
+        model = db_fetch_model(idx)
         print(list(model.predict(data['X'])))
         return jsonify({"prediction": list(model.predict(data['X']))}), 201
     else:

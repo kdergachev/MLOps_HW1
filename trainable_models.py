@@ -1,11 +1,7 @@
 from sklearn.linear_model import TweedieRegressor, LinearRegression
-import pickle
-import os
-import re
-from datetime import date
 import numpy as np
 from sklearn.tree import DecisionTreeRegressor
-import numpy as np
+from database_utils import *
 
 
 MODELDIR = './models'
@@ -16,36 +12,7 @@ MODELDIR = './models'
 ########################################
 
 
-def name_to_save(model, idx):
-    
-    """
-    Get a name to save the model under.
-    
-    INPUTS
-    model: str - string identifying model
-    idx (optional): int - id of the model if it is refit from ones fitted before
-    if None the id is chosen automatically
-    
-    RETURNS
-    str - 'YYYY-MM-DD_{modelname}_{modelid}' where model id is the smallest 
-    possible id or the one supplied in input
-    """
-    
-    # get id if not supplied with one
-    if idx is None:
-        idx = [int(re.search('_(-?\d*).pkl$', i)[1]) for i in os.listdir(MODELDIR)]
-        if not idx:
-            idx = 0
-        else:
-            idx = max(idx) + 1
-    # remove model with given id (old one)
-    else:
-        clear_ids(idx) # now hope no errors come up further
-    today = date.today()
-    return f'{today.strftime("%Y-%m-%d")}_{model}_{idx}'
-
-
-def tree_fit(Y, X, hyperp, id):
+def tree_fit(Y, X, hyperp, idx):
     """
     Fit a tree model with given hyperparameters/data
     
@@ -75,13 +42,11 @@ def tree_fit(Y, X, hyperp, id):
     model.ownvarofname = 'tree'
     
     # save the model
-    name = name_to_save('tree', id)
-    with open(f'./models/{name}.pkl', 'wb') as handle:
-        pickle.dump(model, handle)
+    db_add_model(model, 'tree', idx)
     return 0
 
 
-def OLS_fit(Y, X, hyperp, id):
+def OLS_fit(Y, X, hyperp, idx):
     
     """
     Fit a linear regression model with given hyperparameters/data
@@ -108,16 +73,14 @@ def OLS_fit(Y, X, hyperp, id):
     model.ownvarofname = 'linreg'
     
     # save the model
-    name = name_to_save('OLS', id)
-    with open(f'./models/{name}.pkl', 'wb') as handle:
-        pickle.dump(model, handle)
+    db_add_model(model, 'linreg', idx)
     return 0
     
 
 for_train = {'linreg': OLS_fit, 'tree': tree_fit} # dict with trainable models
 
 
-def get_params_from_id(id):
+def get_params_from_id(idx):
     """
     Get model params and name from supplied model id
     
@@ -127,15 +90,11 @@ def get_params_from_id(id):
     RETURNS
     model_hyperparameters: dict, model_name: str
     """
-    models = os.listdir(MODELDIR)
-    modfile = filter(lambda x: int(re.search('_(-?\d*).pkl$', x)[1]) == int(id), models)
-    modfile = list(modfile)[0] # to remove the first (hopefully the only) match
-    with open(f'./models/{modfile}', 'rb') as handle:
-        model = pickle.load(handle)
+    model = db_fetch_model(idx)
     return model.ownvarofhyperparams, model.ownvarofname
 
 
-def clear_ids(id):
+def clear_ids(idx):
     """
     Remove all models with given id from ./models/
     
@@ -148,7 +107,5 @@ def clear_ids(id):
     
     """
     
-    models = os.listdir(MODELDIR)
-    modfiles = filter(lambda x: int(re.search('_(-?\d+).pkl$', x)[1]) == int(id), models)
-    [os.remove(f'{MODELDIR}/{i}') for i in modfiles]
+    db_pure_delete(idx)
     return 0

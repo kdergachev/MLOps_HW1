@@ -1,0 +1,18 @@
+-- Table: public.model_store
+
+-- DROP TABLE IF EXISTS public.model_store;
+
+CREATE TABLE IF NOT EXISTS public.model_store
+(
+    id integer NOT NULL DEFAULT nextval('model_store_id_seq'::regclass),
+    model_bytes bytea NOT NULL,
+    date timestamp with time zone NOT NULL,
+    model_type character varying COLLATE pg_catalog."default" NOT NULL,
+    CONSTRAINT model_store_pkey PRIMARY KEY (id)
+        USING INDEX TABLESPACE "MLOps"
+)
+
+TABLESPACE "MLOps";
+
+ALTER TABLE IF EXISTS public.model_store
+    OWNER to postgres;
